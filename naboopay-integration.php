@@ -162,13 +162,13 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
     // Webhook handler
     add_action('rest_api_init', function() {
-        register_rest_route('imamorders/v1', '/webhook', array(
+        register_rest_route('naboopayorders/v1', '/webhook', array(
             'methods' => 'POST',
-            'callback' => 'imamorders_handle_webhook',
+            'callback' => 'naboopayorders_handle_webhook',
         ));
     });
 
-    function imamorders_handle_webhook(WP_REST_Request $request) {
+    function naboopayorders_handle_webhook(WP_REST_Request $request) {
         // Get the raw request body
         $request_body = $request->get_body();
         // $data = json_decode($request_body, true);
