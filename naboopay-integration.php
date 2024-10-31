@@ -25,7 +25,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $this->id = 'my_custom_gateway';
                 $this->icon = ''; // URL of the gateway icon
                 $this->has_fields = true;
-                $this->method_title = __('My Custom Gateway', 'naboopay-gateway');
+                $this->method_title = __('Naboopay Gateway', 'naboopay-gateway');
                 $this->method_description = __('Custom Payment Gateway for WooCommerce integrating Naboopay.', 'naboopay-gateway');
 
                 $this->init_form_fields();
