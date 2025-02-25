@@ -178,7 +178,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         $received_signature = (string) $request->get_header('x_signature');
 
         // Retrieve the secret key from the plugin options
-        $secret_key = "qh2spgnIj4xZboZWQmTAr6DMwgUCul9p";
+        $secret_key = "YOUR_SECRET_KEY";
 
         // Generate the expected signature using HMAC-SHA256
         $expected_signature = hash_hmac('sha256', $request_body, $secret_key);
