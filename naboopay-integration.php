@@ -4,10 +4,10 @@
  * Plugin URI: https://example.com/
  * Description: A custom payment gateway for WooCommerce integrating Naboopay API.
  * Version: 1.0.2
- * Author: Harouna Sy
- * Author URI: https://www.linkedin.com/in/harouna-sy-154344168/
+ * Author: Votre Nom
+ * Author URI: https://example.com/
  * License: GPL-2.0+
- * Text Domain: naboopay-gateway
+ * Text Domain: my-custom-gateway
  */
 
 if (!defined('ABSPATH')) {
@@ -25,8 +25,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $this->id = 'my_custom_gateway';
                 $this->icon = ''; // URL of the gateway icon
                 $this->has_fields = true;
-                $this->method_title = __('Naboopay Gateway', 'naboopay-gateway');
-                $this->method_description = __('Custom Payment Gateway for WooCommerce integrating Naboopay.', 'naboopay-gateway');
+                $this->method_title = __('My Custom Gateway', 'my-custom-gateway');
+                $this->method_description = __('Custom Payment Gateway for WooCommerce integrating Naboopay.', 'my-custom-gateway');
 
                 $this->init_form_fields();
                 $this->init_settings();
@@ -44,40 +44,40 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             public function init_form_fields() {
                 $this->form_fields = array(
                     'enabled' => array(
-                        'title' => __('Enable/Disable', 'naboopay-gateway'),
+                        'title' => __('Enable/Disable', 'my-custom-gateway'),
                         'type' => 'checkbox',
-                        'label' => __('Enable Naboopay Payment', 'naboopay-gateway'),
+                        'label' => __('Enable Naboopay Payment', 'my-custom-gateway'),
                         'default' => 'yes'
                     ),
                     'title' => array(
-                        'title' => __('Title', 'naboopay-gateway'),
+                        'title' => __('Title', 'my-custom-gateway'),
                         'type' => 'text',
-                        'description' => __('Title shown during checkout.', 'naboopay-gateway'),
-                        'default' => __('Naboopay', 'naboopay-gateway'),
+                        'description' => __('Title shown during checkout.', 'my-custom-gateway'),
+                        'default' => __('Naboopay', 'my-custom-gateway'),
                         'desc_tip' => true,
                     ),
                     'description' => array(
-                        'title' => __('Description', 'naboopay-gateway'),
+                        'title' => __('Description', 'my-custom-gateway'),
                         'type' => 'textarea',
-                        'description' => __('Description shown during checkout.', 'naboopay-gateway'),
-                        'default' => __('Payez via WAVE, ORANGE MONEY et FREE MONEY en toute sécurité', 'naboopay-gateway'),
+                        'description' => __('Description shown during checkout.', 'my-custom-gateway'),
+                        'default' => __('Payez via WAVE, ORANGE MONEY et FREE MONEY en toute sécurité', 'my-custom-gateway'),
                     ),
                     'api_token' => array(
-                        'title' => __('API Token', 'naboopay-gateway'),
+                        'title' => __('API Token', 'my-custom-gateway'),
                         'type' => 'text',
-                        'description' => __('Your Naboopay API Token.', 'naboopay-gateway'),
+                        'description' => __('Your Naboopay API Token.', 'my-custom-gateway'),
                         'default' => ''
                     ),
                     'webhook_url' => array(
-                        'title' => __('Webhook URL', 'naboopay-gateway'),
+                        'title' => __('Webhook URL', 'my-custom-gateway'),
                         'type' => 'text',
-                        'description' => __('URL for handling Naboopay webhook notifications.', 'naboopay-gateway'),
+                        'description' => __('URL for handling Naboopay webhook notifications.', 'my-custom-gateway'),
                         'default' => ''
                     ),
                     'secret_key' => array(  // New field for secret key
-                        'title' => __('Webhook Secret Key', 'naboopay-gateway'),
+                        'title' => __('Webhook Secret Key', 'my-custom-gateway'),
                         'type' => 'text',
-                        'description' => __('Your secret key for verifying webhook signatures.', 'naboopay-gateway'),
+                        'description' => __('Your secret key for verifying webhook signatures.', 'my-custom-gateway'),
                         'default' => ''
                     ),
                 );
@@ -122,7 +122,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     );
                 } else {
                     // Handle the error if the request to Naboopay fails
-                    wc_add_notice(__('Payment error:', 'naboopay-gateway') . ' ' . $response->message, 'error');
+                    wc_add_notice(__('Payment error:', 'my-custom-gateway') . ' ' . $response->message, 'error');
                     return array('result' => 'fail');
                 }
             }
@@ -162,13 +162,13 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
     // Webhook handler
     add_action('rest_api_init', function() {
-        register_rest_route('naboopayorders/v1', '/webhook', array(
+        register_rest_route('imamorders/v1', '/webhook', array(
             'methods' => 'POST',
-            'callback' => 'naboopayorders_handle_webhook',
+            'callback' => 'imamorders_handle_webhook',
         ));
     });
 
-    function naboopayorders_handle_webhook(WP_REST_Request $request) {
+    function imamorders_handle_webhook(WP_REST_Request $request) {
         // Get the raw request body
         $request_body = $request->get_body();
         // $data = json_decode($request_body, true);
@@ -177,15 +177,21 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         // Get the signature from the headers (assuming Naboopay uses a signature header, e.g., X-Naboopay-Signature)
         $received_signature = (string) $request->get_header('x_signature');
 
-        // Retrieve the secret key from the plugin options
-        $secret_key = "YOUR_SECRET_KEY";
+        // Get the secret key from plugin settings
+        $gateway_settings = get_option('woocommerce_my_custom_gateway_settings', array());
+        $secret_key = isset($gateway_settings['secret_key']) ? $gateway_settings['secret_key'] : '';
+
+        // If no secret key is configured, reject the webhook
+        if (empty($secret_key)) {
+            return new WP_REST_Response('Webhook secret key not configured', 500);
+        }
 
         // Generate the expected signature using HMAC-SHA256
         $expected_signature = hash_hmac('sha256', $request_body, $secret_key);
 
         // Verify if the received signature matches the expected signature
         if (!hash_equals($expected_signature, $received_signature)) {
-            return new WP_REST_Response("Invalid signature ". $secret_key . " e " . $expected_signature . " b " . $request_body ." r " .$received_signature, 403);  // Return 403 Forbidden if the signature doesn't match
+            return new WP_REST_Response('Invalid signature', 403);
         }
 
         // If signature is valid, proceed with webhook
@@ -216,16 +222,16 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             switch ($status) {
                 case 'paid':
                     $item->payment_complete();
-                    $item->add_order_note(__('Payment completed via Naboopay.', 'naboopay-gateway'));
+                    $item->add_order_note(__('Payment completed via Naboopay.', 'my-custom-gateway'));
                     break;
                 case 'cancel':
-                    $item->update_status('cancelled', __('Payment cancelled via Naboopay.', 'naboopay-gateway'));
+                    $item->update_status('cancelled', __('Payment cancelled via Naboopay.', 'my-custom-gateway'));
                     break;
                 case 'pending':
-                    $item->update_status('pending', __('Payment pending via Naboopay.', 'naboopay-gateway'));
+                    $item->update_status('pending', __('Payment pending via Naboopay.', 'my-custom-gateway'));
                     break;
                 case 'part_paid':
-                    $item->update_status('on-hold', __('Payment partially paid via Naboopay.', 'naboopay-gateway'));
+                    $item->update_status('on-hold', __('Payment partially paid via Naboopay.', 'my-custom-gateway'));
                     break;
             }
     
